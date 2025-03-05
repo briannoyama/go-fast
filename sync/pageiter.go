@@ -1,4 +1,4 @@
-package threadless
+package sync
 
 type CPageIter[V any, VF ~func(V)] struct {
 	*CPage[V]

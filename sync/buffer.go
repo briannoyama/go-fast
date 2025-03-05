@@ -1,4 +1,4 @@
-package threadless
+package sync
 
 type CBuffer[V any] struct {
 	pages        []*CBufPage[V]

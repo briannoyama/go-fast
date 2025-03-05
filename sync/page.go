@@ -1,4 +1,4 @@
-package threadless
+package sync
 
 type CPage[V any] struct {
 	items []V

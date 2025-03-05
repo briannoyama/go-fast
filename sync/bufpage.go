@@ -1,4 +1,4 @@
-package threadless
+package sync
 
 type CBufPage[V any] struct {
 	CPage[V]

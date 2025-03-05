@@ -1,4 +1,4 @@
-package threadless
+package sync
 
 import (
 	"reflect"

@@ -1,4 +1,4 @@
-package threadless
+package sync
 
 type RefFactory[V any] struct {
 	add    func(*int, V)
