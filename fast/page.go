@@ -1,4 +1,4 @@
-package sync
+package fast
 
 type CPage[V any] struct {
 	items []V

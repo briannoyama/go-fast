@@ -1,4 +1,4 @@
-package sync
+package fast
 
 type CPageIter[V any, VF ~func(V)] struct {
 	*CPage[V]

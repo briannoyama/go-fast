@@ -1,4 +1,4 @@
-package sync
+package fast
 
 type RefFactory[V any] struct {
 	add    func(*int, V)

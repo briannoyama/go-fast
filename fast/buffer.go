@@ -1,4 +1,4 @@
-package sync
+package fast
 
 type CBuffer[V any] struct {
 	pages        []*CBufPage[V]

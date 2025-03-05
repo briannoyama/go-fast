@@ -1,4 +1,4 @@
-package sync
+package fast
 
 type CBufPage[V any] struct {
 	CPage[V]
