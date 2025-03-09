@@ -2,12 +2,18 @@ package stable
 
 import "strconv"
 
-func intMaxIndex(i, j int) int {
+// IntMaxIndex returns index of max number (either 0 or 1)
+func IntMaxIndex(i, j int) int {
 	return ((i - j) >> (strconv.IntSize - 1)) & 1
 }
 
-// May not be worth it. Use built in max instead?
-func intMax(i, j int) int {
-	index := intMaxIndex(i, j)
-	return (i & (index - 1)) | (j & (0 - index))
+// IntZeroIfEqual returns 0 if equal else returns 1
+func IntZeroIfEqual(i, j int) int {
+	ij := i ^ j
+	return IntZeroIfZero(ij)
+}
+
+// IntZeroIfZero returns 0 if 0 else 1
+func IntZeroIfZero(i int) int {
+	return ((i | -i) >> (strconv.IntSize - 1)) & 1
 }

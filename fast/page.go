@@ -12,7 +12,7 @@ func (c *CPage[V]) Add(ref *int, v V) {
 }
 
 func (c *CPage[V]) Get(ref int) V {
-	return *c.Modify(ref)
+	return c.items[ref]
 }
 
 func (c *CPage[V]) Len() int {
