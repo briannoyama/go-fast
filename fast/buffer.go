@@ -30,8 +30,8 @@ func (c *CBuffer[V]) Get(ref int) V {
 	return c.getPage(ref).Get(ref & c.bitmask)
 }
 
-func (c *CBuffer[V]) Modify(ref int) *V {
-	return c.getPage(ref).Modify(ref & c.bitmask)
+func (c *CBuffer[V]) Modify(ref int, f func(*V)) {
+	c.getPage(ref).Modify(ref&c.bitmask, f)
 }
 
 func (c *CBuffer[V]) Pages() []*CBufPage[V] {
@@ -41,7 +41,7 @@ func (c *CBuffer[V]) Pages() []*CBufPage[V] {
 // Remove the vertices pointed to by the Reference
 func (c *CBuffer[V]) Remove(ref int) V {
 	lastPage := len(c.pages) - 1
-	lastRef, v := c.pages[lastPage].pop()
+	lastRef, v := c.pages[lastPage].Pop()
 	// If we did not just pop the ref
 	if ref != *lastRef {
 		page := c.getPage(ref)

@@ -19,8 +19,16 @@ func (c *CPage[V]) Len() int {
 	return len(c.items)
 }
 
-func (c *CPage[V]) Modify(ref int) *V {
-	return &c.items[ref]
+func (c *CPage[V]) Modify(ref int, f func(*V)) {
+	f(&c.items[ref])
+}
+
+func (c *CPage[V]) Pop() (*int, V) {
+	ref := c.refs[len(c.items)-1]
+	item := c.Remove(len(c.items) - 1)
+
+	*ref = -1
+	return ref, item
 }
 
 func (c *CPage[V]) Remove(ref int) V {
@@ -33,6 +41,13 @@ func (c *CPage[V]) Remove(ref int) V {
 	c.items[ref] = c.items[len(c.items)-1]
 	c.items = c.items[:len(c.items)-1]
 	return item
+}
+
+func (c *CPage[V]) swap(ref0, ref1 int) {
+	c.items[ref0], c.items[ref1] = c.items[ref1], c.items[ref0]
+	c.refs[ref0], c.refs[ref1] = c.refs[ref1], c.refs[ref0]
+	*c.refs[ref0] = ref0
+	*c.refs[ref1] = ref1
 }
 
 func (c *CPage[V]) Factory() RefFactory[V] {

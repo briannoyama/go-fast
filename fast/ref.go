@@ -3,7 +3,7 @@ package fast
 type RefFactory[V any] struct {
 	add    func(*int, V)
 	get    func(int) V
-	modify func(int) *V
+	modify func(int, func(*V))
 	remove func(int) V
 	count  int
 }
@@ -26,8 +26,8 @@ func (c *CRef[V]) Get() V {
 	return c.factory.get(c.ref)
 }
 
-func (c *CRef[V]) Modify() *V {
-	return c.factory.modify(c.ref)
+func (c *CRef[V]) Modify(f func(*V)) {
+	c.factory.modify(c.ref, f)
 }
 
 func (c *CRef[V]) Set(v V) {
