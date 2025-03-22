@@ -32,9 +32,9 @@ func (c *CPage[V]) Pop() (*int, V) {
 }
 
 func (c *CPage[V]) Remove(ref int) V {
+	*c.refs[ref] = -1
 	c.refs[ref] = c.refs[len(c.items)-1]
 	*c.refs[ref] = ref
-	*c.refs[len(c.items)-1] = -1
 	c.refs = c.refs[:len(c.items)-1]
 
 	item := c.items[ref]
