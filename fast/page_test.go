@@ -8,74 +8,74 @@ import (
 )
 
 var (
-	c   CPage[int]
-	ref []int
+	cPage     CPage[int]
+	cPageRefs []int
 )
 
-func setup() {
-	c = CPage[int]{}
-	ref = make([]int, 3)
-	c.Add(&ref[1], 0)
-	c.Add(&ref[2], 1)
-	c.Add(&ref[0], 2)
+func setupPage() {
+	cPage = CPage[int]{}
+	cPageRefs = make([]int, 3)
+	cPage.Add(&cPageRefs[1], 0)
+	cPage.Add(&cPageRefs[2], 1)
+	cPage.Add(&cPageRefs[0], 2)
 }
 
 func TestCPageAdd(t *testing.T) {
-	setup()
+	setupPage()
 
 	expItems := []int{0, 1, 2}
-	assert.Equals(t, c.items, expItems)
+	assert.Equals(t, cPage.items, expItems)
 
 	expRefs := []int{2, 0, 1}
-	assert.Equals(t, ref, expRefs)
+	assert.Equals(t, cPageRefs, expRefs)
 }
 
 func TestCPageGet(t *testing.T) {
-	setup()
+	setupPage()
 
-	assert.Equals(t, c.Get(ref[1]), 0)
-	assert.Equals(t, c.Get(ref[2]), 1)
-	assert.Equals(t, c.Get(ref[0]), 2)
+	assert.Equals(t, cPage.Get(cPageRefs[1]), 0)
+	assert.Equals(t, cPage.Get(cPageRefs[2]), 1)
+	assert.Equals(t, cPage.Get(cPageRefs[0]), 2)
 }
 
 func TestCPageLen(t *testing.T) {
-	setup()
+	setupPage()
 
-	assert.Equals(t, c.Len(), 3)
+	assert.Equals(t, cPage.Len(), 3)
 }
 
 func TestCPageModify(t *testing.T) {
-	setup()
+	setupPage()
 
-	c.Modify(0, func(i *int) { *i = 5 })
+	cPage.Modify(0, func(i *int) { *i = 5 })
 	expItems := []int{5, 1, 2}
-	assert.Equals(t, c.items, expItems)
+	assert.Equals(t, cPage.items, expItems)
 }
 
 func TestCPagePop(t *testing.T) {
-	setup()
-	r, val := c.Pop()
+	setupPage()
+	r, val := cPage.Pop()
 
-	assert.Equals(t, r, &ref[0])
+	assert.Equals(t, r, &cPageRefs[0])
 	assert.Equals(t, val, 2)
 }
 
 func TestCPageRemove(t *testing.T) {
-	setup()
+	setupPage()
 
-	assert.Equals(t, c.Remove(ref[1]), 0)
-	fmt.Printf("%v", ref)
-	assert.Equals(t, c.Get(ref[2]), 1)
-	assert.Equals(t, c.Get(ref[0]), 2)
-	assert.Equals(t, c.Len(), 2)
+	assert.Equals(t, cPage.Remove(cPageRefs[1]), 0)
+	fmt.Printf("%v", cPageRefs)
+	assert.Equals(t, cPage.Get(cPageRefs[2]), 1)
+	assert.Equals(t, cPage.Get(cPageRefs[0]), 2)
+	assert.Equals(t, cPage.Len(), 2)
 }
 
 func TestCPageSwap(t *testing.T) {
-	setup()
+	setupPage()
 
-	c.swap(ref[0], ref[1])
-	assert.Equals(t, c.Get(ref[0]), 2)
-	assert.Equals(t, c.Get(ref[1]), 0)
-	assert.Equals(t, ref[0], 0)
-	assert.Equals(t, ref[1], 2)
+	cPage.swap(cPageRefs[0], cPageRefs[1])
+	assert.Equals(t, cPage.Get(cPageRefs[0]), 2)
+	assert.Equals(t, cPage.Get(cPageRefs[1]), 0)
+	assert.Equals(t, cPageRefs[0], 0)
+	assert.Equals(t, cPageRefs[1], 2)
 }

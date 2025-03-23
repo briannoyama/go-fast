@@ -1,5 +1,7 @@
 package fast
 
+// RefFactory creates CRef references that allow operations on values in various
+// data structures
 type RefFactory[V any] struct {
 	add    func(*int, V)
 	get    func(int) V
@@ -8,54 +10,78 @@ type RefFactory[V any] struct {
 	count  int
 }
 
-func (r *RefFactory[V]) Ref() CRef[V] {
+// Ref creates an empty reference to a value.
+func (r *RefFactory[V]) Ref() Ref[V] {
 	r.count += 1
-	return CRef[V]{factory: r}
+	return Ref[V]{factory: r, ref: -1}
 }
 
-func (r *RefFactory[V]) Length() int {
+// Len(gth) returns the count of active references.
+func (r *RefFactory[V]) Len() int {
 	return r.count
 }
 
-type CRef[V any] struct {
+// Ref provides methods for manipulating a single value.
+type Ref[V any] struct {
 	factory *RefFactory[V]
 	ref     int
 }
 
-func (c *CRef[V]) Get() V {
-	return c.factory.get(c.ref)
+// Get the value pointed to by the reference.
+func (r *Ref[V]) Get() V {
+	return r.factory.get(r.ref)
 }
 
-func (c *CRef[V]) Modify(f func(*V)) {
-	c.factory.modify(c.ref, f)
+// Modify the value pointed to by the reference in place by applying f.
+// Does not check if the reference is set.
+func (r *Ref[V]) Modify(f func(*V)) {
+	r.factory.modify(r.ref, f)
 }
 
-func (c *CRef[V]) Set(v V) {
-	c.factory.add(&c.ref, v)
+// Set a value for the reference. Does not check if the reference is already set.
+func (r *Ref[V]) Set(v V) {
+	r.factory.add(&r.ref, v)
 }
 
-func (c *CRef[V]) Unset() V {
+// Unset the value for the reference. Does not check if reference is not set.
+// Does not affect the count of active references in the RefFactory,
+func (c *Ref[V]) Unset() V {
 	return c.factory.remove(c.ref)
 }
 
-func (c *CRef[V]) Destroy() {
+// IsSet is true iff a value is set for the reference in the underlying data structure.
+func (c *Ref[V]) IsSet() bool {
+	return c.ref >= 0
+}
+
+// Destroy decreases decreases the active reference count in RefFactory and
+// makes the CRef reference unusable.
+func (c *Ref[V]) Destroy() {
+	if c.IsSet() {
+		c.Unset()
+	}
 	c.factory.count -= 1
 	c.factory = nil
 }
 
-func (c CRef[V]) WCache(v V) CRefCached[V] {
-	return CRefCached[V]{CRef: c, v: v}
+// CRefCached creates an unset cached reference.
+func (c Ref[V]) WCache(v V) RefCached[V] {
+	return RefCached[V]{Ref: c, v: v}
 }
 
-type CRefCached[V any] struct {
-	CRef[V]
+// RefCached holds a value that can be set/unset.
+// Any modifications of the value while set will be stored.
+type RefCached[V any] struct {
+	Ref[V]
 	v V
 }
 
-func (c *CRefCached[V]) Set() {
-	c.CRef.Set(c.v)
+// Set the value.
+func (c *RefCached[V]) Set() {
+	c.Ref.Set(c.v)
 }
 
-func (c *CRefCached[V]) Unset() {
-	c.v = c.CRef.Unset()
+// Unset the value
+func (c *RefCached[V]) Unset() {
+	c.v = c.Ref.Unset()
 }
