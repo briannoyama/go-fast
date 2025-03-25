@@ -71,3 +71,11 @@ func (c *CPage[V]) Factory() RefFactory[V] {
 		remove: c.Remove,
 	}
 }
+
+// Visitor wraps the page
+func (c *CPage[V]) Visitor(visitor func(*V)) CVisitor[V] {
+	return CVisitor[V]{
+		CPage:   c,
+		Visitor: visitor,
+	}
+}

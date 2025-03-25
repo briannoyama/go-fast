@@ -1,7 +1,6 @@
 package fast
 
 import (
-	"fmt"
 	"testing"
 
 	"go-fast/assert"
@@ -64,7 +63,6 @@ func TestCPageRemove(t *testing.T) {
 	setupPage()
 
 	assert.Equals(t, cPage.Remove(cPageRefs[1]), 0)
-	fmt.Printf("%v", cPageRefs)
 	assert.Equals(t, cPage.Get(cPageRefs[2]), 1)
 	assert.Equals(t, cPage.Get(cPageRefs[0]), 2)
 	assert.Equals(t, cPage.Len(), 2)
