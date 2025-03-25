@@ -62,7 +62,7 @@ func (c *CPage[V]) swap(ref0, ref1 int) {
 	*c.refs[ref1] = ref1
 }
 
-// Factory can be used to get CPage ref's, CRef(s).
+// Factory can be used to get Ref(s) to this structure.
 func (c *CPage[V]) Factory() RefFactory[V] {
 	return RefFactory[V]{
 		add:    c.Add,
