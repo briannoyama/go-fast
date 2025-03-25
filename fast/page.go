@@ -72,10 +72,10 @@ func (c *CPage[V]) Factory() RefFactory[V] {
 	}
 }
 
-// Visitor wraps the page
+// Visitor wraps the page with the visitor pattern.
 func (c *CPage[V]) Visitor(visitor func(*V)) CVisitor[V] {
 	return CVisitor[V]{
 		CPage:   c,
-		Visitor: visitor,
+		visitor: visitor,
 	}
 }
