@@ -43,9 +43,8 @@ func (c *CPage[V]) Pop() (*int, V) {
 
 // Remove the item pointed to by the reference.
 func (c *CPage[V]) Remove(ref int) V {
-	*c.refs[ref] = -1
+	*c.refs[len(c.items)-1], *c.refs[ref] = *c.refs[ref], -1
 	c.refs[ref] = c.refs[len(c.items)-1]
-	*c.refs[ref] = ref
 	c.refs = c.refs[:len(c.items)-1]
 
 	item := c.items[ref]
@@ -58,8 +57,7 @@ func (c *CPage[V]) Remove(ref int) V {
 func (c *CPage[V]) swap(ref0, ref1 int) {
 	c.items[ref0], c.items[ref1] = c.items[ref1], c.items[ref0]
 	c.refs[ref0], c.refs[ref1] = c.refs[ref1], c.refs[ref0]
-	*c.refs[ref0] = ref0
-	*c.refs[ref1] = ref1
+	*c.refs[ref0], *c.refs[ref1] = *c.refs[ref1], *c.refs[ref0]
 }
 
 // Factory can be used to get Ref(s) to this structure.
