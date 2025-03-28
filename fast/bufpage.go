@@ -41,7 +41,7 @@ func (c *CBufPage[V]) Pop() (*int, V) {
 	return ref, item
 }
 
-// Remove the item pointed to by the reference.
+// Remove the value pointed to by the reference.
 func (c *CBufPage[V]) Remove(ref int) V {
 	return c.CPage.Remove(c.pushToEnd(ref))
 }
