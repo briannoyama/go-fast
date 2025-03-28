@@ -77,3 +77,9 @@ func TestCPageSwap(t *testing.T) {
 	assert.Equals(t, cPageRefs[0], 0)
 	assert.Equals(t, cPageRefs[1], 2)
 }
+
+func TestCPageRefPreservation(t *testing.T) {
+	setupPage()
+	// TODO Finish
+	cPage.swap(cPageRefs[0], cPageRefs[1])
+}
