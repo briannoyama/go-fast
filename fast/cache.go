@@ -6,9 +6,12 @@ type keyVal[K, V any] struct {
 }
 
 type Cache[K comparable, V any] struct {
-	heap         Heap[keyVal[K, V]]
-	m            map[K]*int
-	lastPriority int
+	heap Heap[keyVal[K, V]]
+	m    map[K]*int
+}
+
+func MakeCache[K comparable, V any]() Cache[K, V] {
+	return Cache[K, V]{m: make(map[K]*int)}
 }
 
 func (c *Cache[K, V]) Add(k K, v V) {
@@ -39,7 +42,7 @@ func (c *Cache[K, V]) Remove(k K) V {
 	return c.heap.Remove(ref).v
 }
 
-func (c *Cache[K, V]) ToEnd(k K) {
+func (c *Cache[K, V]) Hit(k K) {
 	ref := *c.m[k]
 	c.heap.ToEnd(ref)
 }
@@ -50,4 +53,5 @@ func (c *Cache[K, V]) Len() int {
 
 // TODO wrap in an iterator
 func (c *Cache[K, V]) VisitAll(f func(*V)) {
+	c.heap.VisitAll(func(k *keyVal[K, V]) { f(&k.v) })
 }

@@ -45,7 +45,7 @@ func TestHeapAddRelative(t *testing.T) {
 	heap.AddRelative(&refs[0], 9, -5)
 	heap.AddRelative(&refs[1], 10, -9)
 	heap.AddRelative(&refs[2], 11, 2)
-	heap.Add(&refs[3], 12)
+	heap.AddRelative(&refs[3], 12, -1)
 	assert.Contains(t, getHeapData(), 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)
 	assert.Equals(t, emptyHeap(), []int{10, 0, 1, 2, 3, 9, 4, 5, 6, 7, 8, 12, 11})
 }
