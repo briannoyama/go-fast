@@ -7,7 +7,7 @@ type CPage[V any] struct {
 	refs  []*int
 }
 
-// Add a value by adding a reference and a value.
+// Add a value by with a reference.
 // The reference will be set to the position of the value.
 func (c *CPage[V]) Add(ref *int, v V) {
 	c.items = append(c.items, v)
