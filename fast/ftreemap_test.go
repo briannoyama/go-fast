@@ -1,0 +1,83 @@
+package fast
+
+import (
+	"testing"
+
+	"go-fast/assert"
+)
+
+var treeMap FTreeMap[int, int]
+
+func setupTreeMap() {
+	treeMap = NewFTreeMap[int, int]()
+	cPageRefs = make([]int, 3)
+	treeMap.AddAdj(0, 0, &cPageRefs[0], 1, 1)
+	treeMap.AddAdj(0, 1, &cPageRefs[1], 2, 2)
+	treeMap.AddAdj(treeMap.Path(0), 0, &cPageRefs[2], 3, 3)
+}
+
+func TestFTreeMapAddAdjacent(t *testing.T) {
+	setupTreeMap()
+	ref := 0
+	rel := treeMap.Rel(0)
+	treeMap.AddAdj(rel[0], 1, &ref, 4, 4)
+	rel = treeMap.Rel(treeMap.Path(0, 1))
+	// The default child
+	assert.Equals(t, *treeMap.Key(rel[0]), 1)
+	assert.Equals(t, *treeMap.Val(rel[0]), 1)
+	// The newly added right child
+	assert.Equals(t, *treeMap.Key(rel[1]), 4)
+	assert.Equals(t, *treeMap.Val(rel[1]), 4)
+}
+
+func TestFTreeMapParent(t *testing.T) {
+	setupTreeMap()
+
+	rel := treeMap.Path(0, 0, 0)
+	parent := treeMap.Parent(rel)
+	assert.Equals(t, parent, 3)
+	parent = treeMap.Parent(parent)
+	assert.Equals(t, parent, 1)
+	parent = treeMap.Parent(parent)
+	assert.Equals(t, parent, 0)
+}
+
+func TestFTreeMapSwap(t *testing.T) {
+	setupTreeMap()
+
+	assert.Equals(t, *treeMap.Key(treeMap.Path(0, 0, 1)), 3)
+	assert.Equals(t, *treeMap.Key(treeMap.Path(1, 1)), 2)
+	treeMap.Swap(treeMap.Path(1), treeMap.Path(0, 0))
+	assert.Equals(t, *treeMap.Key(treeMap.Path(0, 0, 1)), 2)
+	assert.Equals(t, *treeMap.Key(treeMap.Path(1, 1)), 3)
+}
+
+func TestFTreeMapRemove(t *testing.T) {
+	setupTreeMap()
+	k, _ := treeMap.Remove(treeMap.Path(0, 0, 1))
+	assert.Equals(t, k, 3)
+	assert.Equals(t, *treeMap.Key(treeMap.Path(0, 1)), 1)
+	assert.Equals(t, *treeMap.Key(treeMap.Path(1, 1)), 2)
+
+	setupTreeMap()
+	k, _ = treeMap.Remove(treeMap.Path(1, 1))
+	assert.Equals(t, k, 2)
+	assert.Equals(t, *treeMap.Key(treeMap.Path(0, 1)), 1)
+	assert.Equals(t, *treeMap.Key(treeMap.Path(0, 0, 1)), 3)
+}
+
+func TestFTreeMapVisitAllKeys(t *testing.T) {
+	setupTreeMap()
+
+	keys := []int{}
+	treeMap.VisitAllKeys(func(k *int) { keys = append(keys, *k) })
+	assert.Equals(t, keys, []int{0, 0, 0, 0, 3, 1, 0, 0, 2})
+}
+
+func TestFTreeMapVisitAllValues(t *testing.T) {
+	setupTreeMap()
+
+	vals := []int{}
+	treeMap.VisitAllValues(func(v *int) { vals = append(vals, *v) })
+	assert.Equals(t, vals, []int{0, 0, 1, 2, 3})
+}
