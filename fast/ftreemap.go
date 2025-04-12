@@ -1,8 +1,6 @@
 package fast
 
-import (
-	stable "go-fast/math"
-)
+import "go-fast/stable"
 
 type fNode[K any] struct {
 	// 0 = left child, 1 = right child, 2 = parent
@@ -32,6 +30,7 @@ type FTreeMap[K, V any] struct {
 	nodes []fNode[K]
 	// Points to child nodes
 	page CPage[fItem[K, V]]
+	root int
 	seed [2]int
 }
 
@@ -85,7 +84,7 @@ func (f *FTreeMap[K, V]) parent(ref int) *int {
 
 // Path returns the reference (non-leafs positive, leafs negative) to a node.
 func (f *FTreeMap[K, V]) Path(indexes ...int) int {
-	root := 0
+	root := f.root
 	for _, i := range indexes {
 		root = f.Rel(root)[i]
 	}
@@ -120,6 +119,8 @@ func (f *FTreeMap[K, V]) RemoveRef(ref int) (K, V) {
 	*f.parent(parent.relatives[1]) = parentRef
 	if parent.relatives[2] > -1 {
 		f.nodes[parent.relatives[2]].replace(lastNode, parentRef)
+	} else {
+		f.root = grandparent
 	}
 	// Update pointer of parent of last item that will be swapped in.
 	f.nodes[f.page.items[lastNode+1].parent].replace(itemRef(lastNode+1), iRef)
@@ -132,6 +133,11 @@ func (f *FTreeMap[K, V]) RemoveRef(ref int) (K, V) {
 	f.nodes = f.nodes[:lastNode]
 	removed := f.page.Remove(ref)
 	return removed.k, removed.v
+}
+
+// Root returns reference to root node
+func (f *FTreeMap[K, V]) Root() int {
+	return f.root
 }
 
 // Swap two nodes in the FTreeMap
@@ -155,7 +161,7 @@ func (f *FTreeMap[K, V]) Val(ref int) *V {
 // VisitAllKeys stored inside the FTreeMap.
 // Note: this will also visit the seeded values.
 func (f *FTreeMap[K, V]) VisitAllKeys(k func(*K)) {
-	for next, prev, relI := 0, -1, 0; next != -1 || relI != 2; {
+	for next, prev, relI := f.root, -1, 0; next != -1 || relI != 2; {
 		curr := next
 		if curr >= 0 {
 			// If we didn't backtrack
