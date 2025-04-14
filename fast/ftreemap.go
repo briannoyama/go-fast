@@ -31,34 +31,38 @@ type FTreeMap[K, V any] struct {
 	// Points to child nodes
 	page CPage[fItem[K, V]]
 	root int
-	seed [2]int
 }
 
-// NewFTreeMap seeds a non-empty FTreeMap
+// NewFTreeMap seeds FTreeMap
 func NewFTreeMap[K, V any]() FTreeMap[K, V] {
-	// Seed FBTreeMap with a few nothing nodes. Helps maintain non-empty variant for AddAdjacent+Remove
-	f := FTreeMap[K, V]{
-		nodes: []fNode[K]{{relatives: [3]int{itemRef(0), itemRef(1), -1}}},
-		page:  CPage[fItem[K, V]]{},
-	}
-	f.page.Add(&f.seed[0], fItem[K, V]{parent: 0})
-	f.page.Add(&f.seed[1], fItem[K, V]{parent: 0})
+	f := FTreeMap[K, V]{root: -1}
 	return f
 }
 
 // AddAdj adds a node to the right of a leaf node pointed to by its parent + index (0 or 1).
-func (f *FTreeMap[K, V]) AddAdj(parent, index int, newRef *int, k K, v V) int {
-	newParent := len(f.nodes)
-	sibling := f.nodes[parent].relatives[index]
-	// Update grandparent to point to new parent
-	f.nodes[parent].relatives[index] = newParent
-	// Update sibling to point to new parent
-	f.page.items[itemRef(sibling)].parent = newParent
+func (f *FTreeMap[K, V]) AddAdj(parent, index int, newRef *int, k K, v V) {
+	newParent := -1
+	if f.page.Len() > 0 {
+		newParent = len(f.nodes)
+		sibling := -1
+		// Set root if not set
+		f.root = max(f.root, 0)
+		if f.page.Len() > 1 {
+			// Parent exists, get sibling
+			sibling = f.nodes[parent].relatives[index]
+			// Update grandparent to point to new parent
+			f.nodes[parent].relatives[index] = newParent
+		}
+		// Update sibling to point to new parent
+		f.page.items[itemRef(sibling)].parent = newParent
+		// Add new parent
+		f.nodes = append(
+			f.nodes,
+			fNode[K]{relatives: [3]int{sibling, itemRef(f.page.Len()), parent}},
+		)
+	}
 	// Add new item
-	f.page.Add(newRef, fItem[K, V]{k: k, v: v, parent: len(f.nodes)})
-	// Add new parent
-	f.nodes = append(f.nodes, fNode[K]{relatives: [3]int{sibling, itemRef(*newRef), parent}})
-	return newParent
+	f.page.Add(newRef, fItem[K, V]{k: k, v: v, parent: newParent})
 }
 
 // Key of the node pointed to by the reference.
@@ -69,7 +73,7 @@ func (f *FTreeMap[K, V]) Key(ref int) *K {
 	return &f.nodes[ref].k
 }
 
-// Parent returns the parent reference to a non-leaf node or -1 if there is no parent.
+// Parent returns the parent reference to a non-leaf node or -1 if ref is the root.
 func (f *FTreeMap[K, V]) Parent(ref int) int {
 	return *f.parent(ref)
 }
@@ -96,43 +100,61 @@ func (f *FTreeMap[K, V]) Rel(ref int) [3]int {
 	return f.nodes[ref].relatives
 }
 
+// RemoveI takes in a negative, leaf reference, removing it.
+// Returns the key value associated with that reference.
+func (f *FTreeMap[K, V]) RemoveI(iRef int) (K, V) {
+	return f.Remove(itemRef(iRef))
+}
+
 // Remove takes in a positive, leaf reference, removing it.
 // Returns the key value associated with that reference.
 func (f *FTreeMap[K, V]) Remove(ref int) (K, V) {
-	return f.RemoveRef(itemRef(ref))
-}
+	// If there is a parent
+	lastNode := len(f.nodes)
+	if lastNode > 0 {
 
-// RemoveRef takes in a negative, leaf reference, removing it.
-// Returns the key value associated with that reference.
-func (f *FTreeMap[K, V]) RemoveRef(ref int) (K, V) {
-	// Get nodes involved in removal
-	iRef := itemRef(ref)
-	parentRef := f.page.Get(ref).parent
-	parent := &f.nodes[parentRef]
-	sibling := parent.relatives[0] ^ parent.relatives[1] ^ iRef
-	grandparent := parent.relatives[2]
-	lastNode := len(f.nodes) - 1
+		// Swap lastnode and ref
+		iRef := itemRef(ref)
+		iLastNode := itemRef(lastNode)
+		f.page.swap(ref, lastNode)
+		parentRef := f.page.items[lastNode].parent
 
-	// Swap parent w/last node + remove
-	*parent = f.nodes[lastNode]
-	*f.parent(parent.relatives[0]) = parentRef
-	*f.parent(parent.relatives[1]) = parentRef
-	if parent.relatives[2] > -1 {
-		f.nodes[parent.relatives[2]].replace(lastNode, parentRef)
-	} else {
-		f.root = grandparent
+		f.nodes[f.page.items[ref].parent].replace(iLastNode, iRef)
+		f.nodes[parentRef].replace(iRef, iLastNode)
+
+		ref, iRef = lastNode, iLastNode
+
+		// Swap last parent and parent
+		lastNode -= 1
+		f.nodes[parentRef], f.nodes[lastNode] = f.nodes[lastNode], f.nodes[parentRef]
+		f.fixNode(parentRef, lastNode)
+		f.fixNode(lastNode, parentRef)
+
+		// Connect sibling to grandparent
+		lastRel := f.nodes[lastNode].relatives
+		gparent := lastRel[2]
+		sibling := lastRel[0] ^ lastRel[1] ^ iRef
+		if gparent == -1 {
+			f.root = sibling
+		} else {
+			f.nodes[gparent].replace(lastNode, sibling)
+		}
+		*f.parent(sibling) = gparent
+
+		// Remove last node
+		f.nodes = f.nodes[:lastNode]
 	}
-	// Update pointer of parent of last item that will be swapped in.
-	f.nodes[f.page.items[lastNode+1].parent].replace(itemRef(lastNode+1), iRef)
-
-	// Connect grandparent with sibling
-	f.nodes[grandparent].replace(parentRef, sibling)
-	*f.parent(sibling) = grandparent
-
-	// Finish removal
-	f.nodes = f.nodes[:lastNode]
 	removed := f.page.Remove(ref)
 	return removed.k, removed.v
+}
+
+func (f *FTreeMap[K, V]) fixNode(ref, old int) {
+	*f.parent(f.nodes[ref].relatives[0]) = ref
+	*f.parent(f.nodes[ref].relatives[1]) = ref
+	parent := f.nodes[ref].relatives[2]
+	if parent != -1 {
+		f.nodes[parent].replace(old, ref)
+	}
 }
 
 // Root returns reference to root node
@@ -143,14 +165,13 @@ func (f *FTreeMap[K, V]) Root() int {
 // Swap two nodes in the FTreeMap
 // Can result in unreachable nodes if one of the argumetns is a descendant of the other.
 func (f *FTreeMap[K, V]) Swap(node0, node1 int) {
-	parent0 := *f.parent(node0)
-	parent1 := *f.parent(node1)
+	parent0 := f.parent(node0)
+	parent1 := f.parent(node1)
 
-	f.nodes[parent0].replace(node0, node1)
-	f.nodes[parent1].replace(node1, node0)
+	f.nodes[*parent0].replace(node0, node1)
+	f.nodes[*parent1].replace(node1, node0)
 
-	f.nodes[node0].relatives[2] = parent1
-	f.nodes[node1].relatives[2] = parent0
+	*parent0, *parent1 = *parent1, *parent0
 }
 
 // Val(ue) pointed to by the negative, leaf reference.
@@ -159,7 +180,6 @@ func (f *FTreeMap[K, V]) Val(ref int) *V {
 }
 
 // VisitAllKeys stored inside the FTreeMap.
-// Note: this will also visit the seeded values.
 func (f *FTreeMap[K, V]) VisitAllKeys(k func(*K)) {
 	for next, prev, relI := f.root, -1, 0; next != -1 || relI != 2; {
 		curr := next
@@ -186,14 +206,6 @@ func (f *FTreeMap[K, V]) VisitAllKeys(k func(*K)) {
 
 // VisitAllValues added to the FTreeMap.
 func (f *FTreeMap[K, V]) VisitAllValues(v func(*V)) {
-	maxSeed := stable.IntMaxIndex(f.seed[1], f.seed[0])
-	for _, r := range [3][2]int{
-		{0, f.seed[0^maxSeed]},
-		{f.seed[0^maxSeed], f.seed[0^maxSeed]},
-		{f.seed[0^maxSeed], f.page.Len()},
-	} {
-		for i := r[0]; i < r[1]; i++ {
-			v(&f.page.items[i].v)
-		}
-	}
+	visitor := f.page.Visitor(func(i *fItem[K, V]) { v(&i.v) })
+	visitor.VisitAll()
 }
