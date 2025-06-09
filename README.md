@@ -5,7 +5,7 @@ Fast Data Structures for go inspired by work on a game engine. Everything here b
 ## Organization
 
 ```mermaid
-lowchart TD
+flowchart TD
   A[CPage]-->|creates|C[RefFactory]
   B[CVisitor]-->|has|A
   C-->|creates|D[Ref]
