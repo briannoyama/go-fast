@@ -3,7 +3,7 @@ package fast
 import (
 	"testing"
 
-	"go-fast/assert"
+	"github.com/briannoyama/go-fast/assert"
 )
 
 var buffer CBuffer[int]

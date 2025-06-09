@@ -1,6 +1,6 @@
 package fast
 
-import "go-fast/stable"
+import "github.com/briannoyama/go-fast/stable"
 
 type fNode[K any] struct {
 	// 0 = left child, 1 = right child, 2 = parent

@@ -4,7 +4,7 @@ import (
 	"math"
 	"testing"
 
-	"go-fast/assert"
+	"github.com/briannoyama/go-fast/assert"
 )
 
 var heap Heap[int]
