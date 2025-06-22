@@ -81,6 +81,11 @@ func (c *RefCached[V]) Set() {
 	c.Ref.Set(c.v)
 }
 
+// Get the value (works even if not set).
+func (c *RefCached[V]) Get() V {
+	return c.v
+}
+
 // Unset the value
 func (c *RefCached[V]) Unset() {
 	c.v = c.Ref.Unset()

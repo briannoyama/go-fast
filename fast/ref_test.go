@@ -72,6 +72,7 @@ func TestRefCached(t *testing.T) {
 	rc.Modify(func(v *int) { *v *= 5 })
 	rc.Unset()
 	assert.Equals(t, ref.Get(), -1)
+	assert.Equals(t, rc.Get(), 25)
 
 	rc.Set()
 	assert.Equals(t, ref.Get(), 25)
