@@ -32,6 +32,13 @@ func (c *CVisitor[V]) Remove(ref int) V {
 	return v
 }
 
+// Remove the current visited item if possible
+func (c *CVisitor[V]) RmCurrent() {
+	if c.pos != -1 {
+		c.Remove(c.pos)
+	}
+}
+
 // Factory can be used to get CPage ref's, CRef(s).
 func (c *CVisitor[V]) Factory() RefFactory[V] {
 	return RefFactory[V]{
