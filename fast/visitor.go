@@ -18,8 +18,9 @@ func (c *CVisitor[V]) VisitAll() {
 // Remove the value, calling visitor on shuffled items if necessary.
 func (c *CVisitor[V]) Remove(ref int) V {
 	v := c.CPage.Remove(ref)
-	if ref < c.pos {
-		// Visit the swapped value (if we didn't do this, it would get skipped).
+	if ref < c.pos && c.pos < c.CPage.Len() {
+		// Visit the swapped value if not already visited.
+		// (if we didn't do this, it would get skipped).
 		c.Modify(ref, c.visitor)
 	} else if ref > c.pos {
 		// Visit the removed value. Guarantees that everything gets visited.
