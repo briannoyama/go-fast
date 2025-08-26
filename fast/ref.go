@@ -27,6 +27,14 @@ type Ref[V any] struct {
 	ref     int
 }
 
+// Copy the reference (resulting in two references in distinct location of memory).
+func (r *Ref[V]) Copy(ref *Ref[V]) {
+	*ref = r.factory.Ref()
+	if r.IsSet() {
+		ref.Set(r.Get())
+	}
+}
+
 // Get the value pointed to by the reference.
 func (r *Ref[V]) Get() V {
 	return r.factory.get(r.ref)

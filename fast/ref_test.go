@@ -16,6 +16,7 @@ func setupFactory() {
 	refFactory = RefFactory[int]{
 		add: func(ref *int, v int) {
 			ival = v
+			*ref = 0
 		},
 		get: func(ref int) int {
 			return ival
@@ -58,6 +59,22 @@ func TestRef(t *testing.T) {
 
 	ref.Unset()
 	assert.Equals(t, ref.Get(), -1)
+}
+
+func TestRefCopy(t *testing.T) {
+	setupRef()
+
+	refCopy := Ref[int]{}
+	ref.Copy(&refCopy)
+	assert.Equals(t, refFactory.count, 2)
+	assert.Equals(t, refCopy.IsSet(), false)
+	ref.Set(5)
+	ref.Copy(&refCopy)
+	assert.Equals(t, refFactory.count, 3)
+	assert.Equals(t, refCopy.IsSet(), true)
+	assert.Equals(t, refCopy.Get(), 5)
+	refCopy.Destroy()
+	assert.Equals(t, refFactory.count, 2)
 }
 
 func TestRefCached(t *testing.T) {
