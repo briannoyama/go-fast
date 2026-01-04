@@ -1,6 +1,8 @@
 package fast
 
-import "github.com/briannoyama/go-fast/stable"
+import (
+	"github.com/briannoyama/go-fast/stable"
+)
 
 type fNode[K any] struct {
 	// 0 = left child, 1 = right child, 2 = parent
@@ -109,42 +111,34 @@ func (f *FTreeMap[K, V]) RemoveI(iRef int) (K, V) {
 // Remove takes in a positive, leaf reference, removing it.
 // Returns the key value associated with that reference.
 func (f *FTreeMap[K, V]) Remove(ref int) (K, V) {
-	// If there is a parent
-	lastNode := len(f.nodes)
-	if lastNode > 0 {
+	lastItem := f.page.Len() - 1
+	swapParent := f.page.items[lastItem].parent
+	removed := f.page.Remove(ref)
 
-		// Swap lastnode and ref
+	// If there are parents
+	lastNode := len(f.nodes) - 1
+	if lastNode >= 0 {
+		// Fix parent of swapped item
 		iRef := itemRef(ref)
-		iLastNode := itemRef(lastNode)
-		f.page.swap(ref, lastNode)
-		parentRef := f.page.items[lastNode].parent
+		f.nodes[swapParent].replace(itemRef(lastItem), iRef)
 
-		f.nodes[f.page.items[ref].parent].replace(iLastNode, iRef)
-		f.nodes[parentRef].replace(iRef, iLastNode)
-
-		ref, iRef = lastNode, iLastNode
-
-		// Swap last parent and parent
-		lastNode -= 1
-		f.nodes[parentRef], f.nodes[lastNode] = f.nodes[lastNode], f.nodes[parentRef]
-		f.fixNode(parentRef, lastNode)
-		f.fixNode(lastNode, parentRef)
-
-		// Connect sibling to grandparent
-		lastRel := f.nodes[lastNode].relatives
-		gparent := lastRel[2]
-		sibling := lastRel[0] ^ lastRel[1] ^ iRef
-		if gparent == -1 {
+		// Remove parent node of removed item
+		rel := f.nodes[removed.parent].relatives
+		sibling := rel[0] ^ rel[1] ^ iRef
+		*f.parent(sibling) = rel[2]
+		if rel[2] == -1 {
 			f.root = sibling
 		} else {
-			f.nodes[gparent].replace(lastNode, sibling)
+			f.nodes[rel[2]].replace(removed.parent, sibling)
 		}
-		*f.parent(sibling) = gparent
 
-		// Remove last node
+		// Swap parent node to delete
+		if removed.parent != lastNode {
+			f.nodes[removed.parent], f.nodes[lastNode] = f.nodes[lastNode], f.nodes[removed.parent]
+			f.fixNode(removed.parent, lastNode)
+		}
 		f.nodes = f.nodes[:lastNode]
 	}
-	removed := f.page.Remove(ref)
 	return removed.k, removed.v
 }
 
@@ -152,7 +146,9 @@ func (f *FTreeMap[K, V]) fixNode(ref, old int) {
 	*f.parent(f.nodes[ref].relatives[0]) = ref
 	*f.parent(f.nodes[ref].relatives[1]) = ref
 	parent := f.nodes[ref].relatives[2]
-	if parent != -1 {
+	if parent == -1 {
+		f.root = ref
+	} else {
 		f.nodes[parent].replace(old, ref)
 	}
 }
@@ -163,7 +159,7 @@ func (f *FTreeMap[K, V]) Root() int {
 }
 
 // Swap two nodes in the FTreeMap
-// Can result in unreachable nodes if one of the argumetns is a descendant of the other.
+// Can result in unreachable nodes if one of the arguments is a descendant of the other.
 func (f *FTreeMap[K, V]) Swap(node0, node1 int) {
 	parent0 := f.parent(node0)
 	parent1 := f.parent(node1)
