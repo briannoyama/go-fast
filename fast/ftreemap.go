@@ -177,7 +177,7 @@ func (f *FTreeMap[K, V]) Val(ref int) *V {
 
 // VisitAllKeys stored inside the FTreeMap.
 func (f *FTreeMap[K, V]) VisitAllKeys(k func(*K)) {
-	for next, prev, relI := f.root, -1, 0; next != -1 || relI != 2; {
+	for next, prev, relI := f.root, 0, 0; next != -1 || relI != 2; {
 		curr := next
 		if curr >= 0 {
 			// If we didn't backtrack

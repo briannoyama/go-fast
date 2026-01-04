@@ -92,6 +92,19 @@ func TestFTreeMapVisitAllKeys(t *testing.T) {
 	keys := []int{}
 	treeMap.VisitAllKeys(func(k *int) { keys = append(keys, *k) })
 	assert.Equals(t, keys, []int{0, 0, 0, 0, 3, 2, 1})
+
+	// Edge case tree with 2 children
+	treeMap.Remove(cPageRefs[0])
+	treeMap.Remove(cPageRefs[1])
+	keys = []int{}
+	treeMap.VisitAllKeys(func(k *int) { keys = append(keys, *k) })
+	assert.Equals(t, keys, []int{0, 3, 2})
+
+	// Edge case tree with 1 child
+	treeMap.Remove(cPageRefs[2])
+	keys = []int{}
+	treeMap.VisitAllKeys(func(k *int) { keys = append(keys, *k) })
+	assert.Equals(t, keys, []int{3})
 }
 
 func TestFTreeMapVisitAllValues(t *testing.T) {
