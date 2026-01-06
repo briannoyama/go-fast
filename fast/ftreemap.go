@@ -75,6 +75,11 @@ func (f *FTreeMap[K, V]) Key(ref int) *K {
 	return &f.nodes[ref].k
 }
 
+// Len (gth) of the map. (Ie. # of key val pairs)
+func (f *FTreeMap[K, V]) Len() int {
+	return f.page.Len()
+}
+
 // Parent returns the parent reference to a non-leaf node or -1 if ref is the root.
 func (f *FTreeMap[K, V]) Parent(ref int) int {
 	return *f.parent(ref)
