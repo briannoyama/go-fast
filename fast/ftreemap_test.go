@@ -31,6 +31,11 @@ func TestFTreeMapAddAdjacent(t *testing.T) {
 	assert.Equals(t, *treeMap.Val(rel[1]), 4)
 }
 
+func TestFTreeMapLen(t *testing.T) {
+	setupTreeMap()
+	assert.Equals(t, treeMap.Len(), 4)
+}
+
 func TestFTreeMapParent(t *testing.T) {
 	setupTreeMap()
 
