@@ -108,17 +108,18 @@ func (f *FTreeMap[K, V]) Rel(ref int) [3]int {
 }
 
 // RemoveI takes in a negative, leaf reference, removing it.
-// Returns the key value associated with that reference.
-func (f *FTreeMap[K, V]) RemoveI(iRef int) (K, V) {
+// Returns the key value associated with that reference and the sibling if it exists.
+func (f *FTreeMap[K, V]) RemoveI(iRef int) (K, V, int) {
 	return f.Remove(itemRef(iRef))
 }
 
 // Remove takes in a positive, leaf reference, removing it.
-// Returns the key value associated with that reference.
-func (f *FTreeMap[K, V]) Remove(ref int) (K, V) {
+// Returns the key value associated with that reference and the sibling if it exists.
+func (f *FTreeMap[K, V]) Remove(ref int) (K, V, int) {
 	lastItem := f.page.Len() - 1
 	swapParent := f.page.items[lastItem].parent
 	removed := f.page.Remove(ref)
+	sibling := 0
 
 	// If there are parents
 	lastNode := len(f.nodes) - 1
@@ -129,7 +130,7 @@ func (f *FTreeMap[K, V]) Remove(ref int) (K, V) {
 
 		// Remove parent node of removed item
 		rel := f.nodes[removed.parent].relatives
-		sibling := rel[0] ^ rel[1] ^ iRef
+		sibling = rel[0] ^ rel[1] ^ iRef
 		*f.parent(sibling) = rel[2]
 		if rel[2] == -1 {
 			f.root = sibling
@@ -144,7 +145,7 @@ func (f *FTreeMap[K, V]) Remove(ref int) (K, V) {
 		}
 		f.nodes = f.nodes[:lastNode]
 	}
-	return removed.k, removed.v
+	return removed.k, removed.v, sibling
 }
 
 func (f *FTreeMap[K, V]) fixNode(ref, old int) {

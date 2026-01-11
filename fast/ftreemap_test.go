@@ -68,27 +68,32 @@ func TestFTreeMapRemove(t *testing.T) {
 
 	assert.Equals(t, *treeMap.Key(treeMap.Path(0, 0, 0)), 0)
 
-	k, _ := treeMap.RemoveI(treeMap.Path(0, 0, 1))
+	k, _, s := treeMap.RemoveI(treeMap.Path(0, 0, 1))
 	assert.Equals(t, k, 3)
+	assert.Equals(t, s, -1)
 	assert.Equals(t, *treeMap.Key(treeMap.Path(0, 0)), 0)
 
 	// Empty the tree
 	setupTreeMap()
-	k, _ = treeMap.Remove(cPageRefs[1])
+	k, _, s = treeMap.Remove(cPageRefs[1])
 	assert.Equals(t, k, 1)
+	assert.Equals(t, s, 1)
 	assert.Equals(t, *treeMap.Key(treeMap.Path(1)), 2)
 	assert.Equals(t, *treeMap.Key(treeMap.Path(0, 1)), 3)
 
-	k, _ = treeMap.Remove(cPageRefs[2])
+	k, _, s = treeMap.Remove(cPageRefs[2])
 	assert.Equals(t, k, 2)
+	assert.Equals(t, s, 0)
 	assert.Equals(t, *treeMap.Key(treeMap.Path(0)), 0)
 	assert.Equals(t, *treeMap.Key(treeMap.Path(1)), 3)
 
-	k, _ = treeMap.RemoveI(treeMap.Path(0))
+	k, _, s = treeMap.RemoveI(treeMap.Path(0))
 	assert.Equals(t, k, 0)
+	assert.Equals(t, s, -1)
 
-	k, _ = treeMap.RemoveI(treeMap.Root())
+	k, _, s = treeMap.RemoveI(treeMap.Root())
 	assert.Equals(t, k, 3)
+	assert.Equals(t, s, 0)
 }
 
 func TestFTreeMapVisitAllKeys(t *testing.T) {
