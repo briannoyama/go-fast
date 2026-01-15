@@ -96,31 +96,46 @@ func TestFTreeMapRemove(t *testing.T) {
 	assert.Equals(t, s, 0)
 }
 
-func TestFTreeMapVisitAllKeys(t *testing.T) {
+func TestFTreeMapVisitAll(t *testing.T) {
 	setupTreeMap()
+	for i := range 3 {
+		*treeMap.Key(i) = i + 4
+	}
 
 	keys := []int{}
-	treeMap.VisitAllKeys(func(k *int) { keys = append(keys, *k) })
-	assert.Equals(t, keys, []int{0, 0, 0, 0, 3, 2, 1})
+	treeMap.VisitAll(
+		func(k *int) bool { keys = append(keys, *k); return true },
+		func(k, v *int) { keys = append(keys, *k) })
+	assert.Equals(t, keys, []int{4, 5, 6, 0, 0, 3, 3, 2, 2, 1, 1})
+
+	keys = []int{}
+	treeMap.VisitAll(
+		func(k *int) bool { keys = append(keys, *k); return *k != 5 && *k != 2 },
+		func(k, v *int) { keys = append(keys, *k) })
+	assert.Equals(t, keys, []int{4, 5, 1, 1})
 
 	// Edge case tree with 2 children
 	treeMap.Remove(cPageRefs[0])
 	treeMap.Remove(cPageRefs[1])
 	keys = []int{}
-	treeMap.VisitAllKeys(func(k *int) { keys = append(keys, *k) })
-	assert.Equals(t, keys, []int{0, 3, 2})
+	treeMap.VisitAll(
+		func(k *int) bool { keys = append(keys, *k); return true },
+		func(k, v *int) { keys = append(keys, *k) })
+	assert.Equals(t, keys, []int{5, 3, 3, 2, 2})
 
 	// Edge case tree with 1 child
 	treeMap.Remove(cPageRefs[2])
 	keys = []int{}
-	treeMap.VisitAllKeys(func(k *int) { keys = append(keys, *k) })
-	assert.Equals(t, keys, []int{3})
-}
+	treeMap.VisitAll(
+		func(k *int) bool { keys = append(keys, *k); return true },
+		func(k, v *int) { keys = append(keys, *k) })
+	assert.Equals(t, keys, []int{3, 3})
 
-func TestFTreeMapVisitAllValues(t *testing.T) {
-	setupTreeMap()
-
-	vals := []int{}
-	treeMap.VisitAllValues(func(v *int) { vals = append(vals, *v) })
-	assert.Equals(t, vals, []int{0, 1, 2, 3})
+	// Edge case tree with 0 children
+	treeMap.Remove(cPageRefs[3])
+	keys = []int{}
+	treeMap.VisitAll(
+		func(k *int) bool { keys = append(keys, *k); return true },
+		func(k, v *int) { keys = append(keys, *k) })
+	assert.Equals(t, keys, []int{})
 }

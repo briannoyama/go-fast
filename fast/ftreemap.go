@@ -176,21 +176,29 @@ func (f *FTreeMap[K, V]) Swap(node0, node1 int) {
 	*parent0, *parent1 = *parent1, *parent0
 }
 
-// Val(ue) pointed to by the negative, leaf reference.
+// Val (ue) pointed to by the negative, leaf reference.
 func (f *FTreeMap[K, V]) Val(ref int) *V {
 	return &f.page.items[itemRef(ref)].v
 }
 
-// VisitAllKeys stored inside the FTreeMap.
-func (f *FTreeMap[K, V]) VisitAllKeys(k func(*K)) {
+// VisitAll keys and values stored inside the FTreeMap.
+// Does not iterate over children/values of keys for which k returns false.
+func (f *FTreeMap[K, V]) VisitAll(k func(*K) bool, kv func(*K, *V)) {
+	if f.Len() == 0 {
+		return
+	}
+
 	for next, prev, relI := f.root, 0, 0; next != -1 || relI != 2; {
 		curr := next
 		if curr >= 0 {
+			rel := f.Rel(curr)
 			// If we didn't backtrack
 			if relI < 2 {
-				k(&f.nodes[curr].k)
+				if !k(&f.nodes[curr].k) {
+					// Skip and go to parent
+					prev = rel[1]
+				}
 			}
-			rel := f.Rel(curr)
 			// Go to next node
 			eq0 := stable.IntZeroIfEqual(rel[0], prev)
 			eq1 := stable.IntZeroIfEqual(rel[1], prev)
@@ -198,16 +206,12 @@ func (f *FTreeMap[K, V]) VisitAllKeys(k func(*K)) {
 			next = rel[relI]
 		} else {
 			iRef := itemRef(curr)
-			k(&f.page.items[iRef].k)
+			if k(&f.page.items[iRef].k) {
+				kv(&f.page.items[iRef].k, &f.page.items[iRef].v)
+			}
 			relI = 2
 			next = f.page.items[iRef].parent
 		}
 		prev = curr
 	}
-}
-
-// VisitAllValues added to the FTreeMap.
-func (f *FTreeMap[K, V]) VisitAllValues(v func(*V)) {
-	visitor := f.page.Visitor(func(i *fItem[K, V]) { v(&i.v) })
-	visitor.VisitAll()
 }
