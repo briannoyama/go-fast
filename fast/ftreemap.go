@@ -183,7 +183,8 @@ func (f *FTreeMap[K, V]) Val(ref int) *V {
 
 // VisitAll keys and values stored inside the FTreeMap.
 // Does not iterate over children/values of keys for which k returns false.
-func (f *FTreeMap[K, V]) VisitAll(k func(*K) bool, kv func(*K, *V)) {
+// Exits early if kv returns false
+func (f *FTreeMap[K, V]) VisitAll(k func(*K) bool, kv func(*K, *V) bool) {
 	if f.Len() == 0 {
 		return
 	}
@@ -207,7 +208,10 @@ func (f *FTreeMap[K, V]) VisitAll(k func(*K) bool, kv func(*K, *V)) {
 		} else {
 			iRef := itemRef(curr)
 			if k(&f.page.items[iRef].k) {
-				kv(&f.page.items[iRef].k, &f.page.items[iRef].v)
+				if !kv(&f.page.items[iRef].k, &f.page.items[iRef].v) {
+					// For iter yield functions, return early when yield is false
+					return
+				}
 			}
 			relI = 2
 			next = f.page.items[iRef].parent
