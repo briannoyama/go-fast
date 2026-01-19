@@ -10,18 +10,18 @@ var treeMap FTreeMap[int, int]
 
 func setupTreeMap() {
 	treeMap = NewFTreeMap[int, int]()
-	cPageRefs = make([]int, 4)
-	treeMap.AddAdj(-1, -1, &cPageRefs[0], 0, 0)
-	treeMap.AddAdj(-1, -1, &cPageRefs[1], 1, 1)
-	treeMap.AddAdj(treeMap.Root(), 0, &cPageRefs[2], 2, 2)
-	treeMap.AddAdj(treeMap.Path(0), 0, &cPageRefs[3], 3, 3)
+	cPageRefs = []int{
+		treeMap.Add0(0, 0),
+		treeMap.Add1(1, 1),
+		treeMap.AddAdj(treeMap.Root(), 0, 2, 2),
+		treeMap.AddAdj(treeMap.Path(0), 0, 3, 3),
+	}
 }
 
-func TestFTreeMapAddAdjacent(t *testing.T) {
+func TestFTreeMapAddAdjacent2(t *testing.T) {
 	setupTreeMap()
-	ref := 0
 	rel := treeMap.Rel(0)
-	treeMap.AddAdj(treeMap.Root(), 1, &ref, 4, 4)
+	treeMap.AddAdj(treeMap.Root(), 1, 4, 4)
 	rel = treeMap.Rel(treeMap.Path(1))
 	// The default child
 	assert.Equals(t, *treeMap.Key(rel[0]), 1)
@@ -31,12 +31,12 @@ func TestFTreeMapAddAdjacent(t *testing.T) {
 	assert.Equals(t, *treeMap.Val(rel[1]), 4)
 }
 
-func TestFTreeMapLen(t *testing.T) {
+func TestFTreeMapLen2(t *testing.T) {
 	setupTreeMap()
 	assert.Equals(t, treeMap.Len(), 4)
 }
 
-func TestFTreeMapParent(t *testing.T) {
+func TestFTreeMapParent2(t *testing.T) {
 	setupTreeMap()
 
 	rel := treeMap.Path(0, 0, 0)
@@ -50,7 +50,7 @@ func TestFTreeMapParent(t *testing.T) {
 	assert.Equals(t, parent, -1)
 }
 
-func TestFTreeMapSwap(t *testing.T) {
+func TestFTreeMapSwap2(t *testing.T) {
 	setupTreeMap()
 
 	assert.Equals(t, *treeMap.Key(treeMap.Path(1)), 1)
@@ -63,7 +63,7 @@ func TestFTreeMapSwap(t *testing.T) {
 	assert.Equals(t, *treeMap.Key(treeMap.Path(1, 1)), 3)
 }
 
-func TestFTreeMapRemove(t *testing.T) {
+func TestFTreeMapRemove2(t *testing.T) {
 	setupTreeMap()
 
 	assert.Equals(t, *treeMap.Key(treeMap.Path(0, 0, 0)), 0)
@@ -75,6 +75,10 @@ func TestFTreeMapRemove(t *testing.T) {
 
 	// Empty the tree
 	setupTreeMap()
+	tree := &treeMap
+	print(tree)
+	cpage := cPageRefs
+	print(cpage)
 	k, _, s = treeMap.Remove(cPageRefs[1])
 	assert.Equals(t, k, 1)
 	assert.Equals(t, s, 1)
@@ -83,20 +87,21 @@ func TestFTreeMapRemove(t *testing.T) {
 
 	k, _, s = treeMap.Remove(cPageRefs[2])
 	assert.Equals(t, k, 2)
-	assert.Equals(t, s, 0)
+	assert.Equals(t, s, 2)
 	assert.Equals(t, *treeMap.Key(treeMap.Path(0)), 0)
 	assert.Equals(t, *treeMap.Key(treeMap.Path(1)), 3)
 
 	k, _, s = treeMap.RemoveI(treeMap.Path(0))
 	assert.Equals(t, k, 0)
-	assert.Equals(t, s, -1)
+	assert.Equals(t, s, -4)
 
-	k, _, s = treeMap.RemoveI(treeMap.Root())
+	assert.Equals(t, treeMap.Len(), 1)
+	k, _ = treeMap.RemoveI0(treeMap.Root())
 	assert.Equals(t, k, 3)
-	assert.Equals(t, s, 0)
+	assert.Equals(t, treeMap.root, -1)
 }
 
-func TestFTreeMapVisitAll(t *testing.T) {
+func TestFTreeMapVisitAll2(t *testing.T) {
 	setupTreeMap()
 	for i := range 3 {
 		*treeMap.Key(i) = i + 4
@@ -140,7 +145,7 @@ func TestFTreeMapVisitAll(t *testing.T) {
 	assert.Equals(t, keys, []int{3, 3})
 
 	// Edge case tree with 0 children
-	treeMap.Remove(cPageRefs[3])
+	treeMap.Remove0(cPageRefs[3])
 	keys = []int{}
 	treeMap.VisitAll(
 		func(k *int) bool { keys = append(keys, *k); return true },

@@ -38,7 +38,7 @@ func (h *Heap[V]) Modify(ref int, f func(*V)) {
 	f(&h.items[ref].v)
 }
 
-// Modify the priority of the value a reference points to.
+// ModifyPriority of the value a reference points to.
 // This will potentially change the order of Pop.
 func (h *Heap[V]) ModifyPriority(ref int, priority int) {
 	h.items[ref].priority += priority
@@ -90,7 +90,7 @@ func (h *Heap[V]) Factory() RefFactory[V] {
 // Note: Visitor is not exposed for heaps since removals can result in unexpected orders
 // in the underlying page.
 func (h *Heap[V]) VisitAll(f func(*V)) {
-	v := h.CPage.Visitor(func(h *heapItem[V]) { f(&h.v) })
+	v := h.Visitor(func(h *heapItem[V]) { f(&h.v) })
 	v.VisitAll()
 }
 
