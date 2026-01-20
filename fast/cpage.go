@@ -20,7 +20,7 @@ func (c *CPage[V]) Get(ref int) V {
 	return c.items[ref]
 }
 
-// Len(gth) or number of values held in the page.
+// Len (gth) or number of values held in the page.
 func (c *CPage[V]) Len() int {
 	return len(c.items)
 }
