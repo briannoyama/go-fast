@@ -1,7 +1,7 @@
 package fast
 
 import (
-	"github.com/briannoyama/go-fast/stable"
+	"github.com/briannoyama/go-fast/v2/stable"
 )
 
 type fNode[K any] struct {

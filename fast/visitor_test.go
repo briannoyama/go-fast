@@ -3,7 +3,7 @@ package fast
 import (
 	"testing"
 
-	"github.com/briannoyama/go-fast/assert"
+	"github.com/briannoyama/go-fast/v2/assert"
 )
 
 func TestPageIter0(t *testing.T) {

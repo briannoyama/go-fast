@@ -3,7 +3,7 @@ package stable
 import (
 	"testing"
 
-	"github.com/briannoyama/go-fast/assert"
+	"github.com/briannoyama/go-fast/v2/assert"
 )
 
 func TestIntMaxIndex(t *testing.T) {

@@ -1,6 +1,6 @@
 package fast
 
-import "github.com/briannoyama/go-fast/stable"
+import "github.com/briannoyama/go-fast/v2/stable"
 
 type heapItem[V any] struct {
 	priority int
