@@ -22,7 +22,7 @@ func MakeCBuffer[V any](pageSizeBits int) CBuffer[V] {
 func (c *CBuffer[V]) Add(ref *int, v V) {
 	// Check if there's enough space
 	if c.pages[len(c.pages)-1].Len()>>c.pageSizeBits > 0 {
-		c.pages = append(c.pages, CBufPage[V]{})
+		c.pages = append(c.pages, NewPreAllocCBufPage[V](1<<c.pageSizeBits))
 	}
 
 	// Add page number to reference

@@ -7,6 +7,13 @@ type CPage[V any] struct {
 	refs  []*int
 }
 
+func NewPreAllocCPage[V any](len int) CPage[V] {
+	return CPage[V]{
+		items: make([]V, 0, len),
+		refs:  make([]*int, 0, len),
+	}
+}
+
 // Add a value by with a reference.
 // The reference will be set to the position of the value.
 func (c *CPage[V]) Add(ref *int, v V) {

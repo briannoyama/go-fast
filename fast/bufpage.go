@@ -7,6 +7,12 @@ type CBufPage[V any] struct {
 	lastSwap, lastMod int
 }
 
+func NewPreAllocCBufPage[V any](len int) CBufPage[V] {
+	return CBufPage[V]{
+		CPage: NewPreAllocCPage[V](len),
+	}
+}
+
 // CleanLen is length of data that is "clean". Clean data equals c.Data()[:c.CleanLen()].
 func (c *CBufPage[V]) CleanLen() int {
 	return c.lastSwap

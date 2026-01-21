@@ -10,6 +10,10 @@ func NewSPage[V any]() SPage[V] {
 	return SPage[V]{}
 }
 
+func NewPreAllocSPage[V any](len int) SPage[V] {
+	return SPage[V]{values: make([]V, 0, len)}
+}
+
 // Add a value. Returns a static reference set to the position of the value.
 // Will write over values marked for removal
 func (s *SPage[V]) Add(v V) int {

@@ -44,6 +44,15 @@ func NewFTreeMap[K, V any]() FTreeMap[K, V] {
 	return f
 }
 
+// NewFTreeMap seeds FTreeMap
+func NewPreAllocFTreeMap[K, V any](len int) FTreeMap[K, V] {
+	f := FTreeMap[K, V]{
+		nodes: NewPreAllocSPage[fNode[K]](len - 1),
+		items: NewPreAllocSPage[fItem[K, V]](len),
+	}
+	return f
+}
+
 // Add0 adds a node to the tree. Use only when lenth is 0.
 // Returns the static position of the key value pair.
 func (f *FTreeMap[K, V]) Add0(k K, v V) int {
