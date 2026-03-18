@@ -1,9 +1,12 @@
 package fast
 
+import "iter"
+
 // SPage creates a page of values with static references
 type SPage[V any] struct {
 	values []V
 	free   []int
+	Empty  V
 }
 
 func NewSPage[V any]() SPage[V] {
@@ -44,9 +47,23 @@ func (c *SPage[V]) Modify(ref int, f func(*V)) {
 	f(&c.values[ref])
 }
 
-// Remove marks an item for removal.
-// Does not actually remove or check if the item can be removed.
+// Remove replaces an item with the Empty value.
+// Does not check if the item has already been removed.
 func (s *SPage[V]) Remove(ref int) V {
 	s.free = append(s.free, ref)
-	return s.values[ref]
+	val := s.values[ref]
+	s.values[ref] = s.Empty
+	return val
+}
+
+// Values lets one iterate through the values held in the page.
+// Includes the empty values left by removed values.
+func (s *SPage[V]) Values() iter.Seq[V] {
+	return func(yield func(V) bool) {
+		for _, k := range s.values {
+			if !yield(k) {
+				return
+			}
+		}
+	}
 }
